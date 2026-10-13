@@ -22,8 +22,8 @@ Deno.serve(async (req) => {
     const role = ['admin', 'manager', 'staff', 'bod'].includes(String(b.role)) ? String(b.role) : 'staff';
     const dept = ['staff', 'manager'].includes(role) && b.dept ? String(b.dept) : null;
     const title = String(b.title ?? '').trim() || null;
-    const emp_type = ['fulltime', 'parttime', 'intern', 'remote', 'freelance'].includes(String(b.emp_type)) ? String(b.emp_type) : 'fulltime';
-    const extra = { emp_type, track_late: b.track_late !== false, start_time: String(b.start_time || '') || null, needs_report: b.needs_report !== false };
+    const emp_type = ['fulltime', 'parttime', 'intern', 'remote', 'freelance', 'field'].includes(String(b.emp_type)) ? String(b.emp_type) : 'fulltime';
+    const extra = { emp_type, track_late: b.track_late !== false, start_time: String(b.start_time || '') || null, needs_report: b.needs_report !== false, crm_access: b.crm_access !== false };
     if (!/^\S+@\S+\.\S+$/.test(email)) return json({ error: 'Email không hợp lệ' }, 400);
     if (!full_name) return json({ error: 'Nhập họ tên' }, 400);
     const { data: exists } = await admin.from('cl_members').select('id').ilike('email', email).maybeSingle();
