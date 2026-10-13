@@ -10,6 +10,7 @@ import { HabitsView } from './habits.js';
 import { SettingsView } from './manage.js';
 import { ChatPanel } from './chat.js';
 import * as U from './util.js';
+import { CONFIG } from './config.js';
 
 // Menu theo vai trò
 const reportsBadge = (s, me) => s.reports.filter((r) => r.status === 'submitted' && U.visibleWorkers(s, me).some((p) => p.id === r.person_id)).length;
@@ -121,6 +122,7 @@ function App({ meId, onSignOut }) {
     </div>`}
     <header class="topbar">
       <div class="brand"><img class="wm" src="assets/logo-wordmark.png" alt="VietK" /><span class="tagapp">CHECKLIST</span></div>
+      ${me.role !== 'bod' && me.crm_access !== false && html`<a class="btn appswitch" href=${CONFIG.CRM_URL}>💼 CRM</a>`}
       <nav class="tabs">
         ${nav.map((n) => html`<a href=${'#' + n.id} class=${(cur === n.id ? 'on ' : '') + (n.more ? 'more-item' : '')} onClick=${(e) => { e.preventDefault(); go(n.id); }}>
           <span class="ic">${n.icon}</span><span>${n.label}</span>${n.badge && n.badge(state, me) > 0 && html`<i class="nbadge">${n.badge(state, me)}</i>`}</a>`)}
