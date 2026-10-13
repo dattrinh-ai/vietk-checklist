@@ -4,3 +4,4 @@ supabase/cron.local.sql
 supabase/.ref
 supabase/.temp/
 .DS_Store
+supabase/.token

@@ -14,9 +14,9 @@ verify_jwt = false
 
 [auth]
 enabled = true
-# Thay <APP_URL> bằng địa chỉ GitHub Pages của VietK Checklist (vd https://<tai-khoan>.github.io/vietk-checklist/)
-site_url = "<APP_URL>"
-additional_redirect_urls = ["<APP_URL>**", "<CRM_URL>**"]
+# Địa chỉ 2 app trên GitHub Pages của VietK
+site_url = "https://dattrinh-ai.github.io/vietk-checklist/"
+additional_redirect_urls = ["https://dattrinh-ai.github.io/vietk-checklist/**", "https://dattrinh-ai.github.io/vietk-crm/**"]
 enable_signup = false
 
 [auth.email]
