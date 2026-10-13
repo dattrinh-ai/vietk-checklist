@@ -120,7 +120,7 @@ function App({ meId, onSignOut }) {
       <span class="muted hide-sm">Dữ liệu mẫu, lưu trên trình duyệt này.</span>
     </div>`}
     <header class="topbar">
-      <div class="brand"><img src="assets/logo-mark.png" alt="" /><div class="wordmark"><b>VietK</b><small>CHECKLIST</small></div></div>
+      <div class="brand"><img class="wm" src="assets/logo-wordmark.png" alt="VietK" /><span class="tagapp">CHECKLIST</span></div>
       <nav class="tabs">
         ${nav.map((n) => html`<a href=${'#' + n.id} class=${(cur === n.id ? 'on ' : '') + (n.more ? 'more-item' : '')} onClick=${(e) => { e.preventDefault(); go(n.id); }}>
           <span class="ic">${n.icon}</span><span>${n.label}</span>${n.badge && n.badge(state, me) > 0 && html`<i class="nbadge">${n.badge(state, me)}</i>`}</a>`)}
@@ -226,7 +226,7 @@ function Login({ onDone }) {
   }
   return html`<div class="login">
     <form class="login-card" onSubmit=${submit}>
-      <div class="brand center-brand"><img src="assets/logo-mark.png" alt="" /><div class="wordmark"><b>VietK</b><small>CHECKLIST</small></div></div>
+      <div class="brand center-brand" style="flex-direction:column;gap:6px"><img class="wm" src="assets/logo-full.png" alt="VietK — Giải pháp karaoke hàng đầu Việt Nam" /><span class="tagapp">CHECKLIST</span></div>
       <p class="muted">Đăng nhập bằng tài khoản VietK được cấp</p>
       <label>Email<input type="email" id="login-email" autocomplete="username" value=${email} onInput=${(e) => setEmail(e.target.value)} required /></label>
       <label>Mật khẩu<input type="password" id="login-pw" autocomplete="current-password" value=${pw} onInput=${(e) => setPw(e.target.value)} required /></label>
