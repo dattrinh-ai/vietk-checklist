@@ -143,6 +143,7 @@ export const SOURCES = {
   adhoc: 'Phát sinh',
   assigned: 'Được giao',
   plan: 'Kế hoạch',
+  crm: 'Lắp đặt (CRM)',
 };
 export const PRIVATE_GROUPS = [
   { id: 'health', label: 'Sức khỏe', icon: '🏃' },

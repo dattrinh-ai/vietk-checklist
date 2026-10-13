@@ -129,6 +129,7 @@ function CheckRow({ t, ctx, date, editable, viewOnly, onMore }) {
   const meta = [];
   if (t.source === 'meeting') meta.push(html`<span class="m-meet">Họp</span>`);
   if (t.source === 'assigned') meta.push(html`<span class="m-assign">Được giao</span>`);
+  if (t.source === 'crm') meta.push(html`<span class="m-assign">🛠 Lịch lắp đặt</span>`);
   if (t.source === 'adhoc') meta.push(html`<span>Phát sinh</span>`);
   if (t.source === 'plan') meta.push(html`<span>Kế hoạch</span>`);
   if (t.scope === 'private' && t.group) meta.push(html`<span>${U.groupOf(t.group).label}</span>`);
@@ -385,9 +386,9 @@ function DeleteTask({ ctx, task, onDone }) {
   const own = task.owner_id === me.id;
   const recurring = task.source === 'routine' || task.source === 'meeting';
   const owner = ctx.state.people.find((p) => p.id === task.owner_id);
-  const allowed = (isAdmin && (task.scope === 'work' || own)) || (task.scope === 'work' && owner && U.canManage(me, owner)) || (own && (task.source === 'adhoc' || task.source === 'plan'));
+  const allowed = task.source !== 'crm' && ((isAdmin && (task.scope === 'work' || own)) || (task.scope === 'work' && owner && U.canManage(me, owner)) || (own && (task.source === 'adhoc' || task.source === 'plan')));
   if (!allowed)
-    return html`<span class="muted small">${task.source === 'assigned' ? 'Việc được giao — chỉ quản lý xoá được.' : recurring ? 'Việc lặp lại do quản lý đặt — nhờ quản lý bỏ nếu hôm nay không cần làm.' : ''}</span>`;
+    return html`<span class="muted small">${task.source === 'crm' ? 'Lịch lắp đặt từ CRM — đổi / huỷ lịch trong VietK CRM.' : task.source === 'assigned' ? 'Việc được giao — chỉ quản lý xoá được.' : recurring ? 'Việc lặp lại do quản lý đặt — nhờ quản lý bỏ nếu hôm nay không cần làm.' : ''}</span>`;
   const label = recurring ? 'Bỏ việc này hôm nay' : 'Xoá việc';
   const ask = recurring ? 'Bấm lần nữa để bỏ (các ngày sau vẫn lặp)' : 'Bấm lần nữa để xoá';
   return html`<${ConfirmButton} label=${'🗑 ' + label} ask=${ask} onConfirm=${() => {
