@@ -1,0 +1,25 @@
+project_id = "vietk"
+
+# Cấu hình khi deploy bằng Supabase CLI.
+# Các function tự kiểm tra đăng nhập/khoá bí mật bên trong, nên tắt kiểm tra JWT mặc định
+# (bắt buộc cho webhook Telegram và cron).
+[functions.cl-admin-users]
+verify_jwt = false
+[functions.cl-notify]
+verify_jwt = false
+[functions.cl-telegram]
+verify_jwt = false
+[functions.cl-ai]
+verify_jwt = false
+
+[auth]
+enabled = true
+# Thay <APP_URL> bằng địa chỉ GitHub Pages của VietK Checklist (vd https://<tai-khoan>.github.io/vietk-checklist/)
+site_url = "<APP_URL>"
+additional_redirect_urls = ["<APP_URL>**", "<CRM_URL>**"]
+enable_signup = false
+
+[auth.email]
+# true = cho phép ĐĂNG NHẬP bằng email (tự đăng ký đã bị chặn bởi [auth] enable_signup = false ở trên)
+enable_signup = true
+enable_confirmations = false

@@ -1,0 +1,6 @@
+supabase/.secrets.local
+supabase/.db.local
+supabase/cron.local.sql
+supabase/.ref
+supabase/.temp/
+.DS_Store
