@@ -1,47 +1,65 @@
-# Mummii Checklist
+# VietK Checklist + VietK CRM
 
-Checklist công việc hằng ngày, báo cáo ngày/tuần, KPI và quản lý dự án cho **Mummii Entertainment**
-(Công ty CP Truyền thông và Giải trí MUMMII). Tách riêng hoàn toàn với Fairplay: code, cơ sở dữ liệu, tài khoản.
+Hệ thống quản lý công việc và bán hàng cho **VietK** (giải pháp karaoke & âm thanh, phân phối BBS Prosound).
+Hai app web dùng **chung một cơ sở dữ liệu Supabase và chung tài khoản đăng nhập**:
 
-- **App**: web tĩnh (Preact + htm), GitHub Pages — `https://hoangfairplaysports-web.github.io/mummii-checklist/`
-- **Dữ liệu + đăng nhập**: Supabase project `uqrwcypthrzfltstezfz` (Singapore)
-- `js/config.js` để trống URL → chạy chế độ DEMO với dữ liệu mẫu
+| App | Dùng để | Thư mục / repo |
+|---|---|---|
+| **VietK Checklist** | Việc hằng ngày, bắt đầu ngày làm việc (giờ + vị trí), báo cáo ngày/tuần, KPI, nghỉ phép, trợ lý AI | `vietk-checklist` |
+| **VietK CRM** | Khách hàng & chăm sóc, sản phẩm & combo, báo giá / đơn hàng, thu tiền, lịch lắp đặt | `vietk-crm` |
+
+Lịch lắp đặt tạo trong CRM **tự hiện thành việc** trong mục "Hôm nay" của kỹ thuật viên bên Checklist. Kỹ thuật viên bấm **Xong** → CRM tự chuyển lịch sang "Đã lắp xong" (bấm **Vướng** → lịch chuyển "Có vướng").
 
 ## Vai trò
-| | Nhân viên | Quản lý nhóm | CEO / Quản trị | Chỉ xem |
-|---|:-:|:-:|:-:|:-:|
-| Checklist, báo cáo của mình | ✓ | ✓ | ✓ | |
-| Xem / duyệt / giao việc | | người trong nhóm | toàn công ty | xem toàn công ty |
-| Phòng ban, routine, KPI, nghỉ phép, nhân sự, giờ làm | | | ✓ | |
-| Việc riêng 🔒, thói quen, trợ lý AI | | | ✓ (của chính mình) | |
-| Tab Dự án | khi CEO bật | khi CEO bật | ✓ | khi CEO bật |
-| Phần tiền dự án | | | ✓ | |
 
-Add-on từng người (Cài đặt → Nhân sự): loại nhân sự (full-time, part-time, thực tập, remote, cộng tác viên), giờ bắt đầu riêng, có tính đi trễ, có phải nộp báo cáo.
+| | Nhân viên | Quản lý bộ phận | Giám đốc / Quản trị | Chỉ xem |
+|---|---|---|---|---|
+| Checklist của mình, báo cáo | ✓ | ✓ | ✓ | — |
+| Xem / duyệt báo cáo | — | nhóm mình | tất cả | xem tổng quan |
+| CRM: khách hàng | của mình + chưa ai nhận + khách có lịch lắp giao cho mình | thêm khách của nhóm | tất cả | — |
+| CRM: giá vốn, lãi | — | — | ✓ | — |
+| Sửa sản phẩm, combo, giá | — | — | ✓ | — |
+| Việc riêng 🔒, thói quen, trợ lý AI | — | — | ✓ | — |
 
-## Giờ làm mặc định
-T2–T6 8:30–17:30 · T7 8:30–12:30 · trễ sau 8:30 · báo cáo ngày trước 17:30 (T7 không nộp) · báo cáo tuần sáng T7 trước 12:00.
+Giờ làm: **thứ 2 – thứ 7, 8:30 – 17:30**, báo cáo ngày trước 17:30 (cả thứ 7), báo cáo tuần nộp thứ 7. Đổi trong Checklist → Cài đặt → Giờ làm, vị trí & quyền.
 
-## Dự án
-5 loại, mỗi loại có checklist mẫu theo giai đoạn: MV / Phim ngắn / TVC (Tiền kỳ → Quay → Hậu kỳ → Bàn giao, có đếm vòng sửa),
-Chiến dịch truyền thông, Booking KOL/KOC, Khoá đào tạo, Dự án khác. CEO: thu tiền khách theo đợt, hạng mục & nhà cung cấp,
-phát sinh, nghiệm thu, hồ sơ (báo giá, hợp đồng). Nhập được checklist từ file Excel.
+## Hướng dẫn Quản trị
 
-## Cài đặt ban đầu
-1. Supabase → Authentication → **tắt "Allow new users to sign up"**; URL Configuration: Site URL + Redirect URL = địa chỉ app.
-2. Authentication → Users → **Add user** (Auto Confirm). **Tài khoản đầu tiên tự thành Quản trị.**
-3. Đăng nhập app → Cài đặt → Nhân sự → thêm CEO (vai trò CEO / Quản trị), quản lý nhóm, nhân viên.
-4. Đưa app lên GitHub Pages:
-   ```
-   gh repo create hoangfairplaysports-web/mummii-checklist --public --source . --push
-   gh api -X POST repos/hoangfairplaysports-web/mummii-checklist/pages -f "source[branch]=main" -f "source[path]=/"
-   ```
+**Thêm nhân viên**: Checklist → Thêm → Cài đặt → Nhân sự → **+ Thêm người**. Nhập email, mật khẩu tạm, vai trò, phòng ban, loại nhân sự.
+- Kỹ thuật viên chọn loại **"Kỹ thuật làm ngoài"**: không bị kiểm tra vị trí khi bắt đầu ngày, và CRM mở thẳng lịch lắp đặt.
+- Ô **"Được dùng VietK CRM"** bật sẵn. Bỏ tick nếu người đó không cần CRM.
+- Nhân viên nghỉ việc: mở hồ sơ người đó → tick **Đã nghỉ việc (khoá)**. Dữ liệu cũ vẫn giữ nguyên.
 
-## Khi Mummii muốn bật thông báo & trợ lý AI
-- Tạo bot qua @BotFather, lấy Gemini API key riêng của Mummii → `zsh tools/set-keys.sh` (nhập ẩn, tự nạp lên Supabase + nối webhook).
-- Điền tên bot vào `TELEGRAM_BOT` trong `js/config.js`.
-- Bật lịch nhắc việc: chạy đoạn `cl-notify-5m` (đang để chú thích) trong `supabase/cron.sql`.
+**Phòng ban, việc lặp lại, KPI**: Cài đặt → Phòng ban / Routine. Trang KPI có gợi ý KPI cho từng phòng.
 
-## Cấu trúc
-`js/` giao diện (`projects.js` = Dự án, `ev-core.js` = mẫu checklist dự án), `supabase/schema.sql` = bảng + phân quyền + dữ liệu khởi tạo,
-`supabase/functions/` = tạo tài khoản, nhắc việc, bot Telegram, trợ lý Gemini.
+**Vị trí văn phòng**: làm khi đang ở văn phòng, máy bắt wifi công ty. Vào Cài đặt → Giờ làm, vị trí & quyền → tick ghi nhận vị trí → bấm "+ Thêm IP mạng tôi đang dùng" → bấm "Lấy vị trí hiện tại làm văn phòng" → Lưu.
+
+**Sản phẩm & combo**: CRM → Sản phẩm. Thêm sản phẩm (giá lẻ, giá đại lý, 🔒 giá vốn, bảo hành, có quản lý serial hay không), rồi tạo combo.
+
+**Sao lưu dữ liệu**: gói Supabase miễn phí **không có bản sao lưu tải về được**, nên nên tự sao lưu mỗi tuần:
+- Cách 1: Supabase → Table Editor → chọn từng bảng `cl_*` và `crm_*` → Export → CSV.
+- Cách 2 (người kỹ thuật): `npx supabase db dump --linked -f backup-YYYY-MM-DD.sql`.
+
+Khi nâng lên gói Pro, Supabase tự sao lưu hằng ngày.
+
+## Cài đặt lần đầu (người dựng làm)
+
+1. VietK tạo **Supabase project** (region Singapore) và tài khoản **GitHub** bằng email công ty, rồi mời người dựng vào làm thành viên.
+2. Supabase → SQL Editor: chạy lần lượt `vietk-checklist/supabase/schema.sql` → `vietk-crm/supabase/crm_schema.sql` → `vietk-checklist/supabase/cron.sql`.
+3. Authentication → tạo **tài khoản đầu tiên** (tài khoản này tự thành Quản trị). Tắt "Allow new users to sign up", **giữ Email provider bật**.
+4. Điền `SUPABASE_URL` và khoá publishable vào `js/config.js` của **cả hai** app (giống nhau).
+5. Trong `supabase/config.toml`, thay `<APP_URL>` và `<CRM_URL>` bằng địa chỉ thật, rồi chạy `npx supabase config push`. Ghi project ref vào `supabase/.ref`.
+6. Deploy Edge Functions: `npx supabase functions deploy cl-admin-users cl-notify cl-telegram cl-ai --use-api`.
+7. Bật GitHub Pages cho cả 2 repo.
+8. Khi cần thông báo và trợ lý AI:
+   - Tạo bot Telegram và lấy Gemini API key của VietK.
+   - Chạy `zsh tools/set-keys.sh` (khoá được nhập ẩn).
+   - Điền `TELEGRAM_BOT` trong `js/config.js`.
+   - Bật dòng `cl-notify-5m` trong `cron.sql`.
+
+## Đợt tiếp theo
+
+- **Đợt 2**: kho (nhập / xuất / tồn), serial từng thiết bị khi xuất kho, phiếu bảo hành, nhắc chăm sóc sau bán (ngày 3, ngày 30).
+- **Đợt 3**: đại lý / nhà phân phối (tuyển, chiết khấu, đơn nhập, công nợ), bật thông báo và trợ lý AI.
+
+Chạy thử không cần máy chủ: để trống `js/config.js` là app chạy ở chế độ **DEMO**, dùng dữ liệu mẫu và đổi vai trò ở thanh trên cùng.

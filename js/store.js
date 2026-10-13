@@ -84,7 +84,7 @@ async function all(q) {
 }
 const fromDb = {
   member: (m) => ({ id: m.id, email: m.email, full_name: m.full_name, role: m.role, dept: m.dept, title: m.title, active: m.active,
-    emp_type: m.emp_type, track_late: m.track_late, start_time: m.start_time, needs_report: m.needs_report,
+    emp_type: m.emp_type, track_late: m.track_late, start_time: m.start_time, needs_report: m.needs_report, crm_access: m.crm_access,
     notify: { push: m.notify_push, telegram: m.notify_telegram }, telegram_linked: !!m.telegram_chat_id }),
   withGroup: (r) => {
     const { grp, ...rest } = r;
@@ -391,7 +391,7 @@ export const actions = {
       commit();
       persist(() => run(sb.from('cl_members').update({
         full_name: next.full_name, role: next.role, dept: ['staff', 'manager'].includes(next.role) ? next.dept || null : null, title: next.title || null, active: next.active !== false,
-        emp_type: next.emp_type || 'fulltime', track_late: next.track_late !== false, start_time: next.start_time || null, needs_report: next.needs_report !== false,
+        emp_type: next.emp_type || 'fulltime', track_late: next.track_late !== false, start_time: next.start_time || null, needs_report: next.needs_report !== false, crm_access: next.crm_access !== false,
         notify_push: !!next.notify?.push, notify_telegram: !!next.notify?.telegram,
       }).eq('id', p.id)));
     } else {

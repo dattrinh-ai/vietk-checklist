@@ -232,6 +232,7 @@ function People({ ctx }) {
           </div>
           <label class="check"><input type="checkbox" checked=${f.track_late !== false} onChange=${(e) => setF({ ...f, track_late: e.target.checked })} /> Tính đi trễ (bỏ tick cho người làm giờ linh hoạt / remote)</label>
           <label class="check"><input type="checkbox" checked=${f.needs_report !== false} onChange=${(e) => setF({ ...f, needs_report: e.target.checked })} /> Phải nộp báo cáo cuối ngày</label>
+          ${f.role !== 'bod' && html`<label class="check"><input type="checkbox" checked=${f.crm_access !== false} onChange=${(e) => setF({ ...f, crm_access: e.target.checked })} /> Được dùng VietK CRM (khách hàng, đơn, lắp đặt)</label>`}
         </fieldset>`}
         <label>Chức danh<input id="m-title" value=${f.title || ''} onInput=${(e) => setF({ ...f, title: e.target.value })} /></label>
         ${!f.id && html`
