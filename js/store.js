@@ -103,7 +103,7 @@ const pick = (o, keys) => Object.fromEntries(keys.filter((k) => k in o).map((k) 
 const TASK_COLS = ['id', 'owner_id', 'title', 'date', 'time', 'end_time', 'due_date', 'source', 'routine_id', 'scope', 'group', 'priority', 'status',
   'progress', 'output', 'qty', 'note', 'block_reason', 'need_help', 'kpi_id', 'assigned_by'];
 const ROUTINE_COLS = ['id', 'title', 'owner_id', 'dept', 'repeat', 'days', 'month_day', 'time', 'end_time', 'kind', 'priority', 'scope', 'group', 'kpi_key', 'active'];
-const KPI_COLS = ['id', 'key', 'title', 'owner_id', 'type', 'target', 'period', 'unit', 'manual', 'active'];
+const KPI_COLS = ['id', 'key', 'title', 'owner_id', 'type', 'target', 'period', 'unit', 'manual', 'active', 'crm_metric'];
 
 export const auth = {
   async session() {
@@ -155,7 +155,7 @@ export async function loadLive() {
     await sb.rpc('cl_generate_routines', { p_date: addDays(1) });
   }
   const since = addDays(-100) < yearStart() ? addDays(-100) : yearStart();
-  const [settings, routines, kpis, leaves, tasksRecent, tasksOpen, daystarts, reports, weekly, habits, habitLogs, chat] = await Promise.all([
+  const [settings, routines, kpis, leaves, tasksRecent, tasksOpen, daystarts, reports, weekly, habits, habitLogs, chat, crmDaily] = await Promise.all([
     sb.from('cl_settings').select('data').eq('id', 1).maybeSingle().then(chk),
     all(() => sb.from('cl_routines').select('*').order('created_at')),
     all(() => sb.from('cl_kpis').select('*').order('created_at')),
@@ -168,6 +168,8 @@ export async function loadLive() {
     all(() => sb.from('cl_habits').select('*').order('created_at')),
     all(() => sb.from('cl_habit_logs').select('*').gte('date', addDays(-120)).order('id')),
     sb.from('cl_chat').select('*').order('at', { ascending: false }).limit(100).then(chk),
+    // số liệu VietK CRM cho KPI tự tính (bỏ qua nếu chưa cài CRM)
+    sb.rpc('crm_kpi_daily', { p_since: since }).then((r) => r.data || [], () => []),
   ]);
   state = {
     live: true,
@@ -185,6 +187,7 @@ export async function loadLive() {
     habits,
     habit_logs: habitLogs,
     chat: chat.reverse(),
+    crm_daily: crmDaily,
     loadedAt: Date.now(),
   };
   commit();

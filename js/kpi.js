@@ -27,8 +27,8 @@ function KpiRow({ ctx, k, at: ref, onEdit }) {
     <div class="row small muted">
       <span>${U.fmtShort(prog.from)} – ${U.fmtShort(prog.to)}</span>
       ${k.type === 'bool' && isAdmin && html`<button class="link" onClick=${() => actions.setKpiManual(k.id, prog.from, !prog.value)}>${prog.value ? 'Đánh dấu chưa xong' : 'Đánh dấu đã xong'}</button>`}
-      ${k.type === 'percent' && isAdmin && html`<span class="row">Cập nhật: <input class="mini-in" type="number" min="0" max="100" value=${prog.value} onChange=${(e) => actions.setKpiManual(k.id, prog.from, Number(e.target.value) || 0)} />%</span>`}
-      ${k.type === 'count' && html`<span>· tự cộng từ checklist</span>`}
+      ${k.type === 'percent' && !k.crm_metric && isAdmin && html`<span class="row">Cập nhật: <input class="mini-in" type="number" min="0" max="100" value=${prog.value} onChange=${(e) => actions.setKpiManual(k.id, prog.from, Number(e.target.value) || 0)} />%</span>`}
+      ${k.crm_metric ? html`<span title="Tự tính từ đơn hàng, khách, thanh toán, lịch lắp trong VietK CRM">· 🔗 tự tính từ CRM</span>` : k.type === 'count' && html`<span>· tự cộng từ checklist</span>`}
       ${onEdit && html`<button class="link push" onClick=${() => onEdit(k)}>Sửa</button>`}
     </div>
   </div>`;
@@ -76,7 +76,8 @@ export function KpiView({ ctx }) {
 function KpiForm({ ctx, k, onClose }) {
   const { state } = ctx;
   const staff = U.visibleWorkers(state, ctx.me);
-  const [f, setF] = useState({ title: '', owner_id: staff[0]?.id, type: 'count', target: 5, period: 'week', unit: '', applyAll: false, routine_ids: [], ...k });
+  const [f, setF] = useState({ title: '', owner_id: staff[0]?.id, type: 'count', target: 5, period: 'week', unit: '', applyAll: false, routine_ids: [], crm_metric: null, ...k });
+  const pickMetric = (m) => setF({ ...f, crm_metric: m || null, ...(m ? { type: U.CRM_METRICS[m].percent ? 'percent' : 'count', unit: U.CRM_METRICS[m].unit === '%' ? '' : U.CRM_METRICS[m].unit, routine_ids: [] } : {}) });
   const set = (key) => (e) => setF({ ...f, [key]: e.target ? e.target.value : e });
   const owner = state.people.find((p) => p.id === f.owner_id);
   const routines = state.routines.filter((r) => r.kind !== 'meeting' && (r.owner_id === f.owner_id || r.dept === owner?.dept));
@@ -87,7 +88,7 @@ function KpiForm({ ctx, k, onClose }) {
     if (!f.title.trim()) return;
     const targets = f.applyAll && !k.id ? staff.filter((p) => p.dept === owner.dept) : [owner];
     const key = k.key || f.key || f.title.trim().toLowerCase().replace(/\s+/g, '_');
-    for (const p of targets) actions.saveKpi({ id: k.id, key, title: f.title.trim(), owner_id: p.id, type: f.type, target: Number(f.target) || 1, period: f.period, unit: f.unit }, f.routine_ids);
+    for (const p of targets) actions.saveKpi({ id: k.id, key, title: f.title.trim(), owner_id: p.id, type: f.type, target: Number(f.target) || 1, period: f.period, unit: f.unit, crm_metric: f.crm_metric || null }, f.crm_metric ? [] : f.routine_ids);
     ctx.notify(k.id ? 'Đã lưu KPI' : `Đã thêm KPI cho ${targets.length} người`);
     onClose();
   }
@@ -95,7 +96,7 @@ function KpiForm({ ctx, k, onClose }) {
     <form class="form" onSubmit=${save}>
       <label>Giao cho<select value=${f.owner_id} disabled=${!!k.id} onChange=${set('owner_id')}>${staff.map((p) => html`<option value=${p.id}>${p.full_name} — ${U.deptName(p.dept)}</option>`)}</select></label>
       ${!k.id && html`<label class="check"><input type="checkbox" checked=${f.applyAll} onChange=${(e) => setF({ ...f, applyAll: e.target.checked })} /> Áp dụng cho cả nhóm ${U.deptName(owner?.dept)}</label>`}
-      ${!k.id && html`<div><span class="muted small">Mẫu nhanh:</span><div class="chips">${TEMPLATES.map(([t, n, u, ky, pd, tp]) => html`<button type="button" class="chip" onClick=${() => setF({ ...f, title: t, target: n, unit: u, type: tp || 'count', period: pd || 'week', key: ky })}>${t}</button>`)}</div></div>`}
+      ${!k.id && html`<div><span class="muted small">Mẫu nhanh:</span><div class="chips">${TEMPLATES.map(([t, n, u, ky, pd, tp]) => html`<button type="button" class="chip" onClick=${() => setF({ ...f, title: t, target: n, unit: u === '%' ? '' : u, type: tp || 'count', period: pd || 'week', key: ky, crm_metric: U.CRM_METRIC_BY_KEY[ky] || null })}>${U.CRM_METRIC_BY_KEY[ky] ? '🔗 ' : ''}${t}</button>`)}</div></div>`}
       <label>Tên KPI *<input value=${f.title} onInput=${set('title')} placeholder="VD: Bài đăng Facebook" /></label>
       <div class="chips">${Object.entries(U.KPI_TYPES).map(([key, t]) => html`<button type="button" class=${'chip ' + (f.type === key ? 'on' : '')} onClick=${() => setF({ ...f, type: key })}>${t.icon} ${t.label}</button>`)}</div>
       <div class="grid3">
@@ -103,7 +104,12 @@ function KpiForm({ ctx, k, onClose }) {
         ${f.type === 'count' && html`<label>Đơn vị<input value=${f.unit} onInput=${set('unit')} placeholder="bài, video…" /></label>`}
         <label>Chu kỳ<select value=${f.period} onChange=${set('period')}>${Object.entries(U.KPI_PERIODS).map(([key, l]) => html`<option value=${key}>Mỗi ${l}</option>`)}</select></label>
       </div>
-      ${f.type === 'count' && routines.length > 0 && html`<div><b class="small">Tự cộng từ routine nào?</b>
+      <label>Nguồn số liệu<select value=${f.crm_metric || ''} onChange=${(e) => pickMetric(e.target.value)}>
+        <option value="">Tự cộng từ việc trong checklist / quản lý nhập tay</option>
+        ${Object.entries(U.CRM_METRICS).map(([m, x]) => html`<option value=${m}>🔗 Tự tính từ VietK CRM: ${x.label}</option>`)}
+      </select></label>
+      ${f.crm_metric && html`<p class="muted small">Số liệu lấy thẳng từ CRM theo người được giao KPI (khách / đơn / thanh toán họ phụ trách, lịch lắp họ được phân). Không cần tick việc trong checklist.</p>`}
+      ${!f.crm_metric && f.type === 'count' && routines.length > 0 && html`<div><b class="small">Tự cộng từ routine nào?</b>
         <div class="chips">${routines.map((r) => html`<button type="button" class=${'chip ' + (f.routine_ids.includes(r.id) ? 'on' : '')}
           onClick=${() => setF({ ...f, routine_ids: f.routine_ids.includes(r.id) ? f.routine_ids.filter((x) => x !== r.id) : [...f.routine_ids, r.id] })}>${r.title}</button>`)}</div></div>`}
       <div class="row between">
@@ -121,7 +127,7 @@ export function kpiTemplates(dept, role) {
   if (role === 'manager') T.push(['Tỉ lệ việc nhóm hoàn thành đúng hạn', 90, '%', 'team_ontime', 'month', 'percent'], ['Báo cáo nhóm được duyệt đúng hạn', 95, '%', 'team_reports', 'month', 'percent']);
   if (/showroom|online|sales|ban le|tu van/.test(d))
     T.push(['Khách hỏi mới tiếp nhận (Fanpage/Zalo/hotline/showroom)', 60, 'khách', 'leads'], ['Báo giá đã gửi', 25, 'báo giá', 'quotes_sent'], ['Đơn chốt', 15, 'đơn', 'orders'],
-      ['Doanh số chốt (triệu đồng)', 300, 'triệu', 'revenue', 'month'], ['Tỉ lệ chốt / khách hỏi', 25, '%', 'close_rate', 'month', 'percent']);
+      ['Doanh số chốt (triệu đồng)', 300, 'triệu', 'revenue', 'month'], ['Tiền đã thu (triệu đồng)', 250, 'triệu', 'collected', 'month'], ['Tỉ lệ chốt / khách hỏi', 25, '%', 'close_rate', 'month', 'percent']);
   else if (/tmdt|san|marketing|shopee|tiktok/.test(d))
     T.push(['Đơn sàn (Shopee/Lazada/TikTok Shop)', 150, 'đơn', 'mkt_orders', 'month'], ['Doanh thu sàn (triệu đồng)', 200, 'triệu', 'mkt_revenue', 'month'],
       ['Bài đăng / video mới', 20, 'bài', 'posts'], ['Buổi livestream', 8, 'buổi', 'lives', 'month'], ['Đánh giá shop ≥', 4.8, 'sao', 'rating', 'month', 'count']);

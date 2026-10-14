@@ -195,7 +195,11 @@ async function exec(me: Member, name: string, a: Args) {
     for (const k of kpis ?? []) {
       const [from, to] = periodRange(k.period, today);
       let value = Number(k.manual?.[from] ?? 0);
-      if (k.type === 'count') {
+      if (k.crm_metric) {
+        // KPI tự tính từ VietK CRM
+        const { data: v } = await admin.rpc('crm_kpi_value', { p_person: k.owner_id, p_metric: k.crm_metric, p_from: from, p_to: to });
+        value = k.crm_metric === 'close_rate' ? Number(v ?? 0) : value + Number(v ?? 0);
+      } else if (k.type === 'count') {
         const { data: done } = await admin.from('cl_tasks').select('qty').eq('kpi_id', k.id).eq('status', 'done')
           .gte('done_at', from + 'T00:00:00+07:00').lte('done_at', to + 'T23:59:59+07:00');
         value += (done ?? []).reduce((s, t) => s + (Number(t.qty) || 1), 0);

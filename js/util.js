@@ -158,6 +158,20 @@ export const KPI_TYPES = {
   percent: { label: 'Phần trăm', icon: '📊' },
 };
 export const KPI_PERIODS = { week: 'tuần', month: 'tháng', quarter: 'quý' };
+// KPI tự tính từ VietK CRM (bảng crm_* dùng chung cơ sở dữ liệu)
+export const CRM_METRICS = {
+  leads: { label: 'Khách mới tiếp nhận', unit: 'khách' },
+  quotes: { label: 'Báo giá đã tạo', unit: 'báo giá' },
+  orders: { label: 'Đơn chốt', unit: 'đơn' },
+  revenue_m: { label: 'Doanh số chốt (triệu đồng)', unit: 'triệu' },
+  collected_m: { label: 'Tiền đã thu (triệu đồng)', unit: 'triệu' },
+  installs: { label: 'Lịch lắp đặt hoàn thành', unit: 'lịch' },
+  close_rate: { label: 'Tỉ lệ chốt / khách mới (%)', unit: '%', percent: true },
+};
+// mã KPI mẫu → số liệu CRM tương ứng
+export const CRM_METRIC_BY_KEY = { leads: 'leads', quotes_sent: 'quotes', orders: 'orders', revenue: 'revenue_m', collected: 'collected_m', installs: 'installs', close_rate: 'close_rate' };
+const crmSum = (state, owner, metric, from, to) =>
+  (state.crm_daily || []).filter((r) => r.metric === metric && (!owner || r.person_id === owner) && r.day >= from && r.day <= to).reduce((a, r) => a + Number(r.value || 0), 0);
 export const LEAVE_TYPES = {
   full: 'Nghỉ cả ngày',
   am: 'Nghỉ buổi sáng',
@@ -287,6 +301,15 @@ export function kpiProgress(state, kpi, ref = todayStr()) {
   if (kpi.type === 'bool') {
     const v = (kpi.manual || {})[from];
     return { value: v ? 1 : 0, target: 1, pct: v ? 100 : 0, from, to };
+  }
+  if (kpi.crm_metric) {
+    let value;
+    if (kpi.crm_metric === 'close_rate') {
+      const leads = crmSum(state, kpi.owner_id, 'leads', from, to);
+      value = leads ? Math.round((crmSum(state, kpi.owner_id, 'leads_won', from, to) / leads) * 100) : 0;
+    } else value = Math.round((crmSum(state, kpi.owner_id, kpi.crm_metric, from, to) + (Number((kpi.manual || {})[from]) || 0)) * 10) / 10;
+    const target = Number(kpi.target) || 1;
+    return { value, target, pct: Math.round((value / target) * 100), from, to, crm: true };
   }
   let value = 0;
   for (const t of state.tasks) {
