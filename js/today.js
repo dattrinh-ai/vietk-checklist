@@ -277,15 +277,18 @@ function QuickAdd({ ctx, person, privacy }) {
 export function TaskForm({ ctx, person, initial = {}, assign = false, onClose }) {
   const { state, me } = ctx;
   const staff = U.visibleWorkers(state, me);
-  const [f, setF] = useState({ title: '', priority: 'mid', date: U.todayStr(), due_date: '', time: '', scope: 'work', group: 'other', owner_id: assign ? staff[0]?.id : person.id, note: '', kpi_id: '', ...initial });
+  const [f, setF] = useState({ title: '', priority: 'mid', date: U.todayStr(), due_date: '', time: '', scope: 'work', group: 'other', owner_id: assign ? staff[0]?.id : person.id, note: '', kpi_id: '', qty: '', ...initial });
   const set = (k) => (e) => setF({ ...f, [k]: e.target ? e.target.value : e });
   const canPrivate = !assign && person.id === me.id && me.role === 'admin';
-  const kpis = state.kpis.filter((k) => k.owner_id === f.owner_id && k.active);
+  // KPI cộng từ việc (KPI tự tính từ CRM không gắn vào việc được)
+  const kpis = state.kpis.filter((k) => k.owner_id === f.owner_id && k.active && !k.crm_metric && k.type === 'count');
+  const kpi = kpis.find((k) => k.id === f.kpi_id);
   function save(e) {
     e.preventDefault();
     if (!f.title.trim()) return;
     actions.addTask({
       ...f, title: f.title.trim(), time: f.time || null, due_date: f.due_date || null, kpi_id: f.kpi_id || null,
+      qty: f.kpi_id && f.qty !== '' && Number(f.qty) > 0 ? Number(f.qty) : null,
       group: f.scope === 'private' ? f.group : null,
       source: assign ? 'assigned' : f.date > U.todayStr() ? 'plan' : 'adhoc', assigned_by: assign ? me.id : null,
     });
@@ -312,7 +315,12 @@ export function TaskForm({ ctx, person, initial = {}, assign = false, onClose })
           <select value=${f.priority} onChange=${set('priority')}>${Object.entries(U.PRIORITIES).map(([k, p]) => html`<option value=${k}>${p.icon} ${p.label}</option>`)}</select></label>
       </div>
       ${f.scope === 'work' && kpis.length > 0 && html`<label>Tính vào KPI (không bắt buộc)
-        <select value=${f.kpi_id} onChange=${set('kpi_id')}><option value="">— Không —</option>${kpis.map((k) => html`<option value=${k.id}>${k.title}</option>`)}</select></label>`}
+        <select value=${f.kpi_id} onChange=${set('kpi_id')}><option value="">— Không —</option>${kpis.map((k) => html`<option value=${k.id}>${k.title} (${k.target} ${k.unit || ''}/${U.KPI_PERIODS[k.period]})</option>`)}</select></label>`}
+      ${kpi && html`<div class="grid2">
+        <label>Số lượng *<input type="number" min="1" step="1" inputmode="numeric" value=${f.qty} onInput=${set('qty')} placeholder="1" /></label>
+        <label>Đơn vị<input value=${kpi.unit || 'đơn vị'} disabled title="Đơn vị theo KPI — quản lý đổi trong tab KPI" /></label>
+      </div>
+      <p class="muted small">Khi bấm <b>Xong</b>, KPI "${kpi.title}" được cộng <b>${Number(f.qty) > 0 ? f.qty : 1} ${kpi.unit || ''}</b>. Làm được nhiều/ít hơn thì sửa số lượng ngay trên dòng việc trước khi bấm Xong.</p>`}
       <label>Mô tả / ghi chú<textarea rows="2" value=${f.note} onInput=${set('note')}></textarea></label>
       <p class="muted small">Việc kéo dài nhiều ngày: đặt hạn chót xa hơn — việc sẽ hiện mỗi ngày đến khi xong, quá hạn sẽ báo đỏ.</p>
       <div class="row end"><button type="button" class="btn" onClick=${onClose}>Huỷ</button><button class="btn primary">${assign ? 'Giao việc' : 'Thêm'}</button></div>
